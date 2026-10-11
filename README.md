@@ -1,6 +1,6 @@
 # Integration Skills — Thomas More
 
-Project materials for Smart Machine Vision Lab. Collected on 11 October 2026: all 14 files from ChatGPT Library and 2 additional local files.
+Project materials for Smart Machine Vision Lab. Collected on 11 October 2026. The current collection contains 12 files from ChatGPT Library and 2 current local models. Two outdated cloud model copies were removed after comparison; they remain available in Git history.
 
 ## Project language
 
@@ -16,18 +16,16 @@ Use English for all new documentation, project notes, issues, pull requests, and
 | [requirements/templates](requirements/templates/) | Requirements specification and meeting minutes templates |
 | [requirements/presentations](requirements/presentations/) | Smart Machine Vision Lab presentation |
 | [models/machine-vision](models/machine-vision/) | Additional local StarUML (.mdj) and Visual Paradigm (.vpp) models |
-| [models/machine-vision/space-originals](models/machine-vision/space-originals/) | Original model versions from ChatGPT Library |
 | [course](course/) | ACS teams.pdf |
 | [archive](archive/) | Archived Smart Machine Vision Lab notes in Russian and English |
 
 ## Model versions
 
-The local models differ from the versions in Spaces. Both are preserved separately without merging or overwriting either version.
+Use the models in `models/machine-vision/`. The older cloud copies were removed after comparison:
 
-| Source | MDJ size (bytes) | VPP size (bytes) |
-| --- | ---: | ---: |
-| Additional local files | 283004 | 1384448 |
-| ChatGPT Library | 258698 | 1134592 |
+- The current StarUML model retains all 542 objects from the older copy and adds 49 objects.
+- The current Visual Paradigm file has the same project ID, retains all 789 model elements, and adds 11. Its latest model-element modification timestamp is later than the older copy. Diagram shapes have also changed.
+- The removed versions remain recoverable from Git history before this cleanup.
 
 ## Sources and verification
 
@@ -35,7 +33,7 @@ The local models differ from the versions in Spaces. Both are preserved separate
 - Original folder mapping: Requirements → requirements/; Business Case → business-case/; Archive → archive/.
 - Local StarUML source: `D:\Thomas\integration\Machine VIsion.mdj`
 - Local Visual Paradigm source: `C:\Users\kiril\Documents\VPProjects\Machine Vision Lab.vpp`
-- [MANIFEST.csv](MANIFEST.csv) records paths, sizes, and SHA-256 checksums for all 16 source files.
+- [MANIFEST.csv](MANIFEST.csv) records paths, sizes, and SHA-256 checksums for all 14 retained source files.
 
 Original filenames are preserved. SHA-256 checksums of downloaded files and repository copies were verified to match. Source files in Spaces and the original local folders were left unchanged.
 
