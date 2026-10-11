@@ -8,6 +8,8 @@ Use English for all new documentation, project notes, issues, pull requests, and
 
 ## Navigation
 
+[Automatic model save tracking](tools/MODEL_SYNC.md) explains the local background watcher for StarUML and Visual Paradigm.
+
 | Folder | Contents |
 | --- | --- |
 | [business-case](business-case/) | Business case, supporting screenshot, and W3 User Requirements Specification |
