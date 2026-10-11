@@ -13,3 +13,8 @@
 - Incoming main updates must preserve unsaved editor work. The watcher cannot inspect in-memory StarUML documents, so all incoming replacements wait until editors close; no forced save, close, or reload.
 - `tools/receive_models.py` fast-forwards only when local commits are already included in main, validates incoming models, backs up external sources, and journals replacement before touching the checkout. Pending transactions suspend outgoing sync across restarts.
 - Process detection fails closed and also waits for javaw.exe (Visual Paradigm's possible Java launcher). Tests use disposable repositories and simulated editor state; actual editor process detection is checked on the configured PC.
+
+## 2026-10-11 — Direct StarUML editing
+
+- The user now edits `models/machine-vision/Machine VIsion.mdj` inside integration2. The local watcher must monitor that same file; the earlier `D:\Thomas\integration` copy is no longer the StarUML source.
+- Direct mode validates and commits the working file without replacing it. Incoming updates retain the editor-closed gate and backups. Visual Paradigm remains configured to its external source.

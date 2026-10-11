@@ -4,7 +4,7 @@ On the configured Windows PC, the scheduled task **Integration2 Model Save Watch
 
 | Application | Watched source | Repository copy |
 | --- | --- | --- |
-| StarUML | `D:\Thomas\integration\Machine VIsion.mdj` | `models/machine-vision/Machine VIsion.mdj` |
+| StarUML | `D:\Thomas\integration2\models\machine-vision\Machine VIsion.mdj` | Same file; saves are committed directly |
 | Visual Paradigm | `C:\Users\kiril\Documents\VPProjects\Machine Vision Lab.vpp` | `models/machine-vision/Machine Vision Lab.vpp` |
 
 Save to these exact source paths. A **Save As** to another location is not monitored. The applications do not have to remain open after saving. Monitoring runs while this Windows user is signed in and the computer is awake; it checks again after sign-in or waking.

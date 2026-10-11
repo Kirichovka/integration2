@@ -106,6 +106,16 @@ class ReceiveTests(test_merge_models.ModelMergeTests):
             receiver.receive(self.config, mock.Mock(side_effect=OSError('Process list unavailable')))
         self.assertEqual(self.git('rev-parse', 'HEAD'), before)
 
+    def test_direct_repository_model_updates_after_editor_closes(self):
+        self.config['models'][0]['source'] = str(self.mdj.resolve())
+        before = self.mdj.read_bytes()
+        self.assertIn('waiting for editors', receiver.receive(self.config, lambda: ['StarUML.exe']))
+        self.assertEqual(self.mdj.read_bytes(), before)
+        self.assertIn('Updated from main', receiver.receive(self.config, lambda: []))
+        self.assertEqual(json.loads(self.mdj.read_bytes())['name'], 'Team update')
+        backups = list(receiver.state_path(self.config).glob('backups/*/*.mdj'))
+        self.assertEqual(backups[0].read_bytes(), before)
+
 
 if __name__ == '__main__':
     unittest.main()

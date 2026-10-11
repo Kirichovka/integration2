@@ -23,7 +23,7 @@ cd integration2
 .\tools\setup_contributor.ps1 -StarUmlSource 'D:\My Models\Machine VIsion.mdj'
 ```
 
-Replace the example path with your working model outside the repository. To watch Visual Paradigm too:
+Replace the example path with your working model. You can edit the repository copy directly by passing its full path, or use an external working copy. Direct repository saves are validated and committed without replacing the editor's file. To watch Visual Paradigm too:
 
 ```powershell
 .\tools\setup_contributor.ps1 -StarUmlSource 'D:\My Models\Machine VIsion.mdj' -VisualParadigmSource 'D:\My Models\Machine Vision Lab.vpp'

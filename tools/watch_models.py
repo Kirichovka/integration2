@@ -39,15 +39,18 @@ def sync(config, model):
     source = Path(model['source'])
     relative = model['destination']
     destination = root / relative
+    direct = source.resolve() == destination.resolve()
     before = source.stat()
     data = source.read_bytes()
     after = source.stat()
     if (before.st_mtime_ns, before.st_size) != (after.st_mtime_ns, after.st_size):
         raise RuntimeError('Source changed during reading; retrying later')
     digest = sha(data)
-    if digest == sha(destination.read_bytes()):
+    if direct and not git(config, 'status', '--porcelain', '--', relative):
         return False
-    if destination.with_name('.' + destination.name + '.lck').exists():
+    if not direct and digest == sha(destination.read_bytes()):
+        return False
+    if not direct and destination.with_name('.' + destination.name + '.lck').exists():
         raise RuntimeError('Close the repository model in Visual Paradigm before syncing')
     branch = config.get('branch', 'main')
     if git(config, 'branch', '--show-current') != branch:
@@ -59,7 +62,9 @@ def sync(config, model):
     if any((git_dir / name).exists() for name in
            ['index.lock', 'MERGE_HEAD', 'CHERRY_PICK_HEAD', 'rebase-merge', 'rebase-apply']):
         raise RuntimeError('Git operation in progress; retrying later')
-    if git(config, 'status', '--porcelain', '--', *tracked):
+    if direct and git(config, 'diff', '--cached', '--name-only', '--', *tracked):
+        raise RuntimeError('Model has manually staged edits; commit or unstage them before automatic tracking')
+    if not direct and git(config, 'status', '--porcelain', '--', *tracked):
         raise RuntimeError('Model or MANIFEST.csv has local edits; resolve them before syncing')
     # Validate the complete saved file before replacing the repository copy.
     handle, temporary = tempfile.mkstemp(suffix=source.suffix, dir=git_dir)
@@ -86,7 +91,12 @@ def sync(config, model):
             writer = csv.DictWriter(output, fieldnames=['path', 'bytes', 'sha256', 'source'])
             writer.writeheader()
             writer.writerows(rows)
-        os.replace(temporary, destination)
+        if direct:
+            if sha(source.read_bytes()) != digest:
+                raise RuntimeError('Model changed during validation; retrying later')
+            # The editor owns this file. Never replace it with an earlier read snapshot.
+        else:
+            os.replace(temporary, destination)
         if config.get('update_manifest', True):
             manifest.write_text(output.getvalue(), encoding='utf-8', newline='')
         git(config, 'add', '--', *tracked)

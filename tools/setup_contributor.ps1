@@ -13,11 +13,6 @@ $sources = @(@{name='StarUML';source=(Resolve-Path -LiteralPath $StarUmlSource).
 if ($VisualParadigmSource) {
     $sources += @{name='Visual Paradigm';source=(Resolve-Path -LiteralPath $VisualParadigmSource).Path;destination='models/machine-vision/Machine Vision Lab.vpp'}
 }
-foreach ($model in $sources) {
-    if ($model.source -eq (Join-Path $repoRoot $model.destination)) {
-        throw 'Use a working model file outside the repository, so the watcher can detect and commit saves safely.'
-    }
-}
 # Ask Git Credential Manager for the authenticated GitHub identity. Never log credentials.
 $credentialLines = "protocol=https`nhost=github.com`n`n" | & $gitExe credential fill
 if ($LASTEXITCODE -ne 0) { throw 'Sign in to GitHub using Git Credential Manager first.' }
