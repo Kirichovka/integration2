@@ -53,7 +53,7 @@ git -C $repoRoot push -u origin $branch
 if ($LASTEXITCODE -ne 0) { throw 'Cannot push contributor branch. Resolve divergence without force pushing.' }
 $stateDir = Join-Path $repoRoot '.git/model-watcher'
 New-Item -ItemType Directory -Path $stateDir -Force | Out-Null
-@{repository=$repoRoot;git=$gitExe;branch=$branch;push=$true;update_manifest=$false;
+@{repository=$repoRoot;git=$gitExe;branch=$branch;push=$true;update_manifest=$false;receive_main=$true;
   poll_seconds=2;settle_seconds=6;models=$sources} |
     ConvertTo-Json -Depth 5 | Set-Content -LiteralPath "$stateDir/config.json" -Encoding utf8
 $userId = [Security.Principal.WindowsIdentity]::GetCurrent().Name
@@ -64,4 +64,4 @@ $principal = New-ScheduledTaskPrincipal -UserId $userId -LogonType Interactive -
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit ([TimeSpan]::Zero) -MultipleInstances IgnoreNew -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1) -StartWhenAvailable
 Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Description 'Publish model saves to the authenticated contributor branch.' -Force | Out-Null
 Start-ScheduledTask -TaskName $taskName
-Write-Output "Ready: $login -> $branch. Saves are committed and pushed automatically."
+Write-Output "Ready: $login -> $branch. Saves are published automatically; main updates apply when editors are closed."

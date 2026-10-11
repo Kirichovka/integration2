@@ -7,6 +7,7 @@
 3. The watcher pushes your branch automatically, normally within one minute.
 4. [Model collaboration on GitHub Actions](https://github.com/Kirichovka/integration2/actions/workflows/model-collaboration.yml) checks all contributor branches. It merges model-only changes into `main` when Git can merge them cleanly and the resulting models are valid.
 5. The automation regenerates model checksums in `MANIFEST.csv` on `main`. Contributor branches intentionally do not update the manifest, avoiding checksum conflicts between people.
+6. Each watcher's incoming sync checks `main` every 30 seconds. Once the editors are closed and local saves are synchronized, it fast-forwards the personal branch and updates the external working models, retaining backups.
 
 This is a Git-based companion for StarUML, not an extension installed inside StarUML. Each person keeps an independent working file and a personal Git branch. It does not provide simultaneous editing inside the application.
 
@@ -44,19 +45,21 @@ For a conflict, pause the watcher, fetch `main`, merge it into your contributor 
 
 ## Receiving teammates' changes
 
-The watcher sends your saves; it does not overwrite a model currently open in StarUML with other people's edits. After your branch has merged, stop the watcher and close the model, ensure your local changes are committed and pushed, then run:
+Incoming sync is automatic. **Save your work and close StarUML and Visual Paradigm to apply incoming updates.** Reopen the model after `incoming_status` in `.git/model-watcher/status.json` reports `Updated from main` or `Up to date with main`. Incoming changes wait while either editor is running; a file watcher cannot inspect StarUML's unsaved in-memory document.
 
-```powershell
-Stop-ScheduledTask -TaskName 'Integration2 Model Save Watcher'
-git fetch origin
-git merge origin/main
-```
+The process check is deliberately conservative: any StarUML, Visual Paradigm, or `javaw.exe` process defers incoming updates. A failed process check also defers updates. Editors are never closed, saved, or restarted by the automation. If another Java application uses `javaw.exe`, close it before expecting incoming updates.
 
-If the merge succeeds, back up your external working file and copy the updated model from `models/machine-vision/` to that working path. Reopen it in StarUML and restart the watcher. Resolve any conflicts before copying or restarting. Do not switch the working checkout to `main`; the watcher is bound to your contributor branch.
+Saved local work is committed and published first. The personal branch is fast-forwarded only after its commits are included in main. Divergence, dirty repository files, or GitHub merge conflicts pause incoming sync instead of discarding either side. Do not switch the checkout to main; the watcher stays on your contributor branch.
+
+Before replacing an external working model, the watcher validates the incoming model and stores its previous bytes under `.git/model-watcher/backups/`. A durable `incoming.json` records the pending revision and expected file hashes. Outgoing sync is suspended until that update completes, including after a crash. If the source changes unexpectedly during recovery, it is left untouched and a reconciliation error is reported. Backups are not automatically deleted.
+
+This provides safe updates between editing sessions, not live in-editor reload. Avoid reopening an editor until the pending update completes. For manual conflict resolution, stop the watcher, preserve your working files, reconcile the contributor branch with main, update the external files deliberately, and restart the watcher. Never delete a pending `incoming.json` merely to clear an error without reconciling its recorded sources and repository revision first.
+
+Existing installations: stop the watcher, update the checkout to the latest code after preserving any local work, and rerun `setup_contributor.ps1` with the same source paths. New installations enable incoming sync automatically. Restart the task after upgrading watcher code or configuration.
 
 ## Operations
 
-See [local watcher controls and diagnostics](MODEL_SYNC.md). Configuration is local at `.git/model-watcher/config.json`; logs and status are alongside it. Team mode uses `push: true`, `branch: contributors/<username>`, and `update_manifest: false`.
+See [local watcher controls and diagnostics](MODEL_SYNC.md). Configuration is local at `.git/model-watcher/config.json`; logs and status are alongside it. Team mode uses `push: true`, `receive_main: true`, `branch: contributors/<username>`, and `update_manifest: false`.
 
 Run the GitHub workflow manually from its Actions page to retry pending branches. Each user push to a contributor branch, and each human push to `main`, also starts it. A run scans all branches so queued runs do not lose another contributor's work. Bot merges are processed in the same run because GitHub does not recursively trigger workflows for pushes made with `GITHUB_TOKEN` ([GitHub documentation](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow)).
 

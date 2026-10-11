@@ -15,6 +15,8 @@ import subprocess
 import tempfile
 import time
 
+from receive_models import has_pending, receive
+
 
 def sha(data):
     return hashlib.sha256(data).hexdigest().upper()
@@ -116,9 +118,12 @@ def run(config, once=False):
     observed = {}
     errors = {}
     last_push = 0
+    last_receive = 0
+    incoming_status = 'Not checked yet'
     try:
         while True:
-            for model in config['models']:
+            # A persisted incoming transaction always takes precedence over outgoing saves.
+            for model in ([] if has_pending(config) else config['models']):
                 key = model['source']
                 try:
                     stat = Path(key).stat()
@@ -141,7 +146,7 @@ def run(config, once=False):
                     if errors.get(key) != str(error):
                         logging.error('%s: %s', model['name'], error)
                         errors[key] = str(error)
-            if config.get('push', False) and time.monotonic() - last_push >= 60:
+            if config.get('push', False) and not has_pending(config) and time.monotonic() - last_push >= 60:
                 last_push = time.monotonic()
                 try:
                     branch = config.get('branch', 'main')
@@ -153,10 +158,27 @@ def run(config, once=False):
                     if errors.get('push') != str(error):
                         logging.error('Push failed; will retry: %s', error)
                         errors['push'] = str(error)
+            if (config.get('receive_main', False) or has_pending(config)) and (
+                    once or has_pending(config) or time.monotonic() - last_receive >= 30):
+                last_receive = time.monotonic()
+                try:
+                    message = receive(config)
+                    if message != incoming_status:
+                        logging.info('Incoming: %s', message)
+                    incoming_status = message
+                    errors.pop('receive', None)
+                except Exception as error:
+                    incoming_status = 'Paused: ' + str(error)
+                    if errors.get('receive') != str(error):
+                        logging.error('Incoming update: %s', error)
+                        errors['receive'] = str(error)
             (state / 'status.json').write_text(json.dumps({
                 'pid': os.getpid(), 'checked_at': time.strftime('%Y-%m-%dT%H:%M:%S%z'),
                 'errors': errors, 'automatic_push': config.get('push', False),
                 'branch': config.get('branch', 'main'),
+                'receive_main': config.get('receive_main', False),
+                'incoming_status': incoming_status,
+                'incoming_pending': has_pending(config),
             }, indent=2), encoding='utf-8')
             if once:
                 return 1 if errors else 0

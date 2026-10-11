@@ -22,6 +22,7 @@ class ModelMergeTests(unittest.TestCase):
         self.git('checkout', '-b', 'main')
         self.git('config', 'user.name', 'Test')
         self.git('config', 'user.email', 'test@example.invalid')
+        Path('.gitattributes').write_text('* -text\n')
         self.mdj = Path('models/machine-vision/Machine VIsion.mdj')
         self.mdj.parent.mkdir(parents=True)
         self.write_model('Original')

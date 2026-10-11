@@ -9,7 +9,7 @@ On the configured Windows PC, the scheduled task **Integration2 Model Save Watch
 
 Save to these exact source paths. A **Save As** to another location is not monitored. The applications do not have to remain open after saving. Monitoring runs while this Windows user is signed in and the computer is awake; it checks again after sign-in or waking.
 
-Each changed, valid file is copied into the repository, a local commit is created, and the contributor branch is pushed automatically. GitHub updates the manifest after merging into main. Unchanged saves do not create commits. Several rapid saves may be combined into one snapshot. Original source files are never modified by the watcher.
+Each changed, valid file is copied into the repository, a local commit is created, and the contributor branch is pushed automatically. GitHub updates the manifest after merging into main. Unchanged saves do not create commits. Several rapid saves may be combined into one snapshot. Incoming sync checks main every 30 seconds and updates external working files only while editors are closed, after backing up their previous contents. It never forces an editor to close or save.
 
 **Team mode enables automatic push to your contributor branch.** GitHub merges valid, conflict-free model changes into main. See [team setup and conflict handling](TEAM_WORKFLOW.md). The watcher is installed locally; cloning this repository does not install it on teammates' computers.
 
@@ -25,6 +25,10 @@ Local settings are stored in `.git/model-watcher/config.json`, outside tracked p
 
 - `.git/model-watcher/status.json`: last check, process ID, and current errors.
 - `.git/model-watcher/watcher.log`: rotating activity and error log.
+- `.git/model-watcher/backups/`: previous working files before incoming updates.
+- `.git/model-watcher/incoming.json`: pending incoming transaction, if any; outgoing saves wait until it completes.
+
+The status includes `incoming_status` and `incoming_pending`. Incoming updates pause while StarUML, Visual Paradigm, or javaw.exe is running. Unsaved work stays in the application; save and close the editors to receive the queued model. See [receiving teammates' changes](TEAM_WORKFLOW.md#receiving-teammates-changes) for recovery and upgrade details.
 
 Use PowerShell to manage the task:
 
