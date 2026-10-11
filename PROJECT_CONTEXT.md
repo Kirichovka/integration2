@@ -17,4 +17,5 @@
 ## 2026-10-11 — Direct StarUML editing
 
 - The user now edits `models/machine-vision/Machine VIsion.mdj` inside integration2. The local watcher must monitor that same file; the earlier `D:\Thomas\integration` copy is no longer the StarUML source.
-- Direct mode validates and commits the working file without replacing it. Incoming updates retain the editor-closed gate and backups. Visual Paradigm remains configured to its external source.
+- Direct mode validates and commits the working file without replacing it. Incoming updates retain the editor-closed gate and backups. Both StarUML and Visual Paradigm now monitor their repository copies. Setup defaults to both files within each participant's own clone.
+- GitHub participant audit on 2026-10-11 found only Kirichovka, no pending invitations, and only main plus contributors/Kirichovka. Other participants' local PCs cannot be inspected from this session.

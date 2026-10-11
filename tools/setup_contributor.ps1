@@ -1,9 +1,11 @@
 param(
-    [Parameter(Mandatory=$true)][string]$StarUmlSource,
+    [string]$StarUmlSource,
     [string]$VisualParadigmSource
 )
 $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+if (-not $StarUmlSource) { $StarUmlSource = Join-Path $repoRoot 'models/machine-vision/Machine VIsion.mdj' }
+if (-not $VisualParadigmSource) { $VisualParadigmSource = Join-Path $repoRoot 'models/machine-vision/Machine Vision Lab.vpp' }
 $gitExe = (Get-Command git -ErrorAction Stop).Source
 $pythonExe = (Get-Command python -ErrorAction Stop).Source
 $pythonw = Join-Path (Split-Path $pythonExe) 'pythonw.exe'

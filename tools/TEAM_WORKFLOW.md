@@ -20,10 +20,10 @@ Clone the repository and run the setup from PowerShell:
 ```powershell
 git clone https://github.com/Kirichovka/integration2.git
 cd integration2
-.\tools\setup_contributor.ps1 -StarUmlSource 'D:\My Models\Machine VIsion.mdj'
+.\tools\setup_contributor.ps1
 ```
 
-Replace the example path with your working model. You can edit the repository copy directly by passing its full path, or use an external working copy. Direct repository saves are validated and committed without replacing the editor's file. To watch Visual Paradigm too:
+By default, setup monitors both files inside this clone's `models/machine-vision/` folder. Open those files in StarUML and Visual Paradigm. Each teammate gets paths for their own clone and a branch based on their authenticated GitHub username. Direct repository saves are validated and committed without replacing the editor's file. To use external working copies instead, supply their paths:
 
 ```powershell
 .\tools\setup_contributor.ps1 -StarUmlSource 'D:\My Models\Machine VIsion.mdj' -VisualParadigmSource 'D:\My Models\Machine Vision Lab.vpp'

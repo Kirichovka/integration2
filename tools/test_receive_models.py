@@ -1,5 +1,7 @@
 """Exercise incoming updates against disposable Git repositories and working files."""
 import json
+import sqlite3
+from contextlib import closing
 from pathlib import Path
 from unittest import mock
 import unittest
@@ -114,6 +116,27 @@ class ReceiveTests(test_merge_models.ModelMergeTests):
         self.assertIn('Updated from main', receiver.receive(self.config, lambda: []))
         self.assertEqual(json.loads(self.mdj.read_bytes())['name'], 'Team update')
         backups = list(receiver.state_path(self.config).glob('backups/*/*.mdj'))
+        self.assertEqual(backups[0].read_bytes(), before)
+
+    def test_direct_visual_paradigm_receives_only_after_editor_closes(self):
+        path = Path('models/machine-vision/Machine Vision Lab.vpp')
+        before = path.read_bytes()
+        self.git('checkout', 'main')
+        with closing(sqlite3.connect(path)) as db:
+            db.execute("INSERT INTO PROJECT_INFO VALUES ('team-vpp-update')")
+            db.commit()
+        self.git('add', '.')
+        self.git('commit', '-m', 'Team Visual Paradigm update')
+        self.git('push', 'origin', 'main')
+        self.git('checkout', 'contributors/alice')
+        self.config['models'] = [{'name': 'Visual Paradigm', 'source': str(path.resolve()),
+                                  'destination': path.as_posix()}]
+        self.assertIn('waiting for editors', receiver.receive(self.config, lambda: ['Visual Paradigm.exe']))
+        self.assertEqual(path.read_bytes(), before)
+        self.assertIn('Updated from main', receiver.receive(self.config, lambda: []))
+        with closing(sqlite3.connect(path)) as db:
+            self.assertEqual(db.execute("SELECT COUNT(*) FROM PROJECT_INFO WHERE ID='team-vpp-update'").fetchone()[0], 1)
+        backups = list(receiver.state_path(self.config).glob('backups/*/*.vpp'))
         self.assertEqual(backups[0].read_bytes(), before)
 
 

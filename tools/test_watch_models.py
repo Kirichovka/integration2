@@ -1,6 +1,7 @@
 """Direct-edit watcher tests against disposable Git repositories."""
 import json
 import os
+import sqlite3
 from pathlib import Path
 import unittest
 from unittest import mock
@@ -57,6 +58,32 @@ class DirectSaveTests(test_merge_models.ModelMergeTests):
             with self.assertRaisesRegex(RuntimeError, 'changed during validation'):
                 watcher.sync(self.config, self.model)
         self.assertEqual(json.loads(self.mdj.read_bytes())['name'], 'Newer save')
+
+    def test_direct_visual_paradigm_save_with_editor_lock(self):
+        path = Path('models/machine-vision/Machine Vision Lab.vpp')
+        with watcher.closing(sqlite3.connect(path)) as db:
+            db.execute("INSERT INTO PROJECT_INFO VALUES ('saved-change')")
+            db.commit()
+        lock = path.with_name('.' + path.name + '.lck')
+        lock.write_text('editor session')
+        model = {'name': 'Visual Paradigm', 'source': str(path.resolve()),
+                 'destination': path.as_posix()}
+        saved = path.read_bytes()
+        with mock.patch.object(watcher.os, 'replace', side_effect=AssertionError('Must not replace direct VPP')):
+            self.assertTrue(watcher.sync(self.config, model))
+        self.assertEqual(path.read_bytes(), saved)
+        self.assertTrue(lock.exists())
+        self.assertFalse(watcher.sync(self.config, model))
+
+    def test_corrupt_visual_paradigm_save_is_not_committed(self):
+        path = Path('models/machine-vision/Machine Vision Lab.vpp')
+        path.write_bytes(b'incomplete database save')
+        head = self.git('rev-parse', 'HEAD')
+        with self.assertRaises(sqlite3.DatabaseError):
+            watcher.sync(self.config, {'name': 'Visual Paradigm', 'source': str(path.resolve()),
+                                      'destination': path.as_posix()})
+        self.assertEqual(self.git('rev-parse', 'HEAD'), head)
+        self.assertEqual(path.read_bytes(), b'incomplete database save')
 
 
 if __name__ == '__main__':
