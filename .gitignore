@@ -3,3 +3,5 @@ Desktop.ini
 ~$*
 *.tmp
 __pycache__/
+*.vpp.lck
+*.vpp.bak_*

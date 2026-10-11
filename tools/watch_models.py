@@ -45,13 +45,19 @@ def sync(config, model):
     digest = sha(data)
     if digest == sha(destination.read_bytes()):
         return False
-    if git(config, 'branch', '--show-current') != 'main':
-        raise RuntimeError('Switch back to main before syncing models')
+    if destination.with_name('.' + destination.name + '.lck').exists():
+        raise RuntimeError('Close the repository model in Visual Paradigm before syncing')
+    branch = config.get('branch', 'main')
+    if git(config, 'branch', '--show-current') != branch:
+        raise RuntimeError(f'Switch back to {branch} before syncing models')
+    tracked = [relative]
+    if config.get('update_manifest', True):
+        tracked.append('MANIFEST.csv')
     git_dir = Path(git(config, 'rev-parse', '--absolute-git-dir'))
     if any((git_dir / name).exists() for name in
            ['index.lock', 'MERGE_HEAD', 'CHERRY_PICK_HEAD', 'rebase-merge', 'rebase-apply']):
         raise RuntimeError('Git operation in progress; retrying later')
-    if git(config, 'status', '--porcelain', '--', relative, 'MANIFEST.csv'):
+    if git(config, 'status', '--porcelain', '--', *tracked):
         raise RuntimeError('Model or MANIFEST.csv has local edits; resolve them before syncing')
     # Validate the complete saved file before replacing the repository copy.
     handle, temporary = tempfile.mkstemp(suffix=source.suffix, dir=git_dir)
@@ -67,22 +73,24 @@ def sync(config, model):
                 if db.execute('PRAGMA quick_check').fetchone()[0] != 'ok':
                     raise ValueError('Visual Paradigm database check failed')
                 db.execute('SELECT ID FROM PROJECT_INFO').fetchone()
-        manifest = root / 'MANIFEST.csv'
-        rows = list(csv.DictReader(manifest.read_text(encoding='utf-8-sig').splitlines()))
-        matches = [row for row in rows if row['path'] == relative]
-        if len(matches) != 1:
-            raise ValueError('Expected exactly one model entry in MANIFEST.csv')
-        matches[0].update(bytes=str(len(data)), sha256=digest)
-        output = io.StringIO(newline='')
-        writer = csv.DictWriter(output, fieldnames=['path', 'bytes', 'sha256', 'source'])
-        writer.writeheader()
-        writer.writerows(rows)
+        if config.get('update_manifest', True):
+            manifest = root / 'MANIFEST.csv'
+            rows = list(csv.DictReader(manifest.read_text(encoding='utf-8-sig').splitlines()))
+            matches = [row for row in rows if row['path'] == relative]
+            if len(matches) != 1:
+                raise ValueError('Expected exactly one model entry in MANIFEST.csv')
+            matches[0].update(bytes=str(len(data)), sha256=digest)
+            output = io.StringIO(newline='')
+            writer = csv.DictWriter(output, fieldnames=['path', 'bytes', 'sha256', 'source'])
+            writer.writeheader()
+            writer.writerows(rows)
         os.replace(temporary, destination)
-        manifest.write_text(output.getvalue(), encoding='utf-8', newline='')
-        git(config, 'add', '--', relative, 'MANIFEST.csv')
+        if config.get('update_manifest', True):
+            manifest.write_text(output.getvalue(), encoding='utf-8', newline='')
+        git(config, 'add', '--', *tracked)
         # --only excludes any unrelated changes already staged by the user.
         git(config, 'commit', '--only', '-m', f"Update {model['name']} model after save",
-            '--', relative, 'MANIFEST.csv')
+            '--', *tracked)
         logging.info('Synced and committed %s (%s)', model['name'], digest)
         return True
     finally:
@@ -136,7 +144,10 @@ def run(config, once=False):
             if config.get('push', False) and time.monotonic() - last_push >= 60:
                 last_push = time.monotonic()
                 try:
-                    git(config, 'push', 'origin', 'main')
+                    branch = config.get('branch', 'main')
+                    if git(config, 'branch', '--show-current') != branch:
+                        raise RuntimeError(f'Expected active branch {branch}')
+                    git(config, 'push', 'origin', f'HEAD:refs/heads/{branch}')
                     errors.pop('push', None)
                 except Exception as error:
                     if errors.get('push') != str(error):
@@ -145,6 +156,7 @@ def run(config, once=False):
             (state / 'status.json').write_text(json.dumps({
                 'pid': os.getpid(), 'checked_at': time.strftime('%Y-%m-%dT%H:%M:%S%z'),
                 'errors': errors, 'automatic_push': config.get('push', False),
+                'branch': config.get('branch', 'main'),
             }, indent=2), encoding='utf-8')
             if once:
                 return 1 if errors else 0

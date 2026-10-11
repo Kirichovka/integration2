@@ -8,7 +8,7 @@ Use English for all new documentation, project notes, issues, pull requests, and
 
 ## Navigation
 
-[Automatic model save tracking](tools/MODEL_SYNC.md) explains the local background watcher for StarUML and Visual Paradigm.
+[Team collaboration setup](tools/TEAM_WORKFLOW.md): automatic personal branches, save publishing, and validated conflict-free merges into main. [Watcher controls](tools/MODEL_SYNC.md).
 
 | Folder | Contents |
 | --- | --- |

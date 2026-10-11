@@ -1,0 +1,28 @@
+name: Model collaboration
+
+on:
+  push:
+    branches:
+      - main
+      - 'contributors/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: model-collaboration-main
+  cancel-in-progress: false
+
+jobs:
+  merge-models:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out trusted main automation
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Validate and merge contributor models
+        run: python3 tools/merge_models.py

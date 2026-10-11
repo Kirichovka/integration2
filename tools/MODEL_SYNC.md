@@ -9,13 +9,13 @@ On the configured Windows PC, the scheduled task **Integration2 Model Save Watch
 
 Save to these exact source paths. A **Save As** to another location is not monitored. The applications do not have to remain open after saving. Monitoring runs while this Windows user is signed in and the computer is awake; it checks again after sign-in or waking.
 
-Each changed, valid file is copied into the repository, its SHA-256 entry in `MANIFEST.csv` is updated, and a local commit is created. Unchanged saves do not create commits. Several rapid saves may be combined into one snapshot. Original source files are never modified by the watcher.
+Each changed, valid file is copied into the repository, a local commit is created, and the contributor branch is pushed automatically. GitHub updates the manifest after merging into main. Unchanged saves do not create commits. Several rapid saves may be combined into one snapshot. Original source files are never modified by the watcher.
 
-**Automatic push is disabled by default on this PC.** Publish local commits when ready with `git push` from the repository. The watcher is installed locally; cloning this repository does not install it on teammates' computers.
+**Team mode enables automatic push to your contributor branch.** GitHub merges valid, conflict-free model changes into main. See [team setup and conflict handling](TEAM_WORKFLOW.md). The watcher is installed locally; cloning this repository does not install it on teammates' computers.
 
 ## Conflict handling
 
-The watcher waits if a model or the manifest has uncommitted edits, if a Git operation is in progress, or if the active branch is not `main`. It does not overwrite those edits. Resolve or commit the changes to resume. An invalid or locked source file is retried later. A failed commit leaves the copied model and manifest available for review; commit or resolve them manually before further changes can sync.
+The watcher waits if a model has uncommitted edits, if a Git operation is in progress, or if the active branch is not the configured contributor branch. It does not overwrite those edits. Resolve or commit the changes to resume. An invalid or locked source file is retried later. A failed commit leaves the copied model available for review; commit or resolve it manually before further changes can sync.
 
 StarUML saves are checked as JSON projects. Visual Paradigm saves are checked as SQLite project databases. These checks detect incomplete or corrupt files, but do not assess diagram meaning.
 
