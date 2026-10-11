@@ -5976,7 +5976,7 @@
                 "$ref": "AAAAAAGhKdVGb3iZBPI="
               },
               "name": "technologieId",
-              "type": "int NNA FK19"
+              "type": "int NNA FK19 AK1"
             },
             {
               "_type": "UMLAttribute",
@@ -20311,7 +20311,7 @@
                       "top": 424,
                       "width": 290,
                       "height": 14,
-                      "text": "technologieId: int NNA FK19",
+                      "text": "technologieId: int NNA FK19 AK1",
                       "horizontalAlignment": 0,
                       "visible": true
                     },
