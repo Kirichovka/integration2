@@ -1,0 +1,20 @@
+Lab lenses;;;;;;;;;;
+;Amount;Model Nummer;Resolution(Mpix);Focal Lenght (mm);Mount;Aperture (min);M.O.D. (mm);"Max.
+Sensor
+Size";"Pixel Size
+Resolving
+Power";"Min.
+WD"
+;1;LM12-16MP-03MM-F2.5-2.3-HD1;16;2,8;M12;F2,5;200;;;
+;1;LM12-5MP-03MM-F2.8-2-ND1;5;3,3;M12;F2,8;100;;;
+;1;LM12-5MP-05MM-F2.5-1.8-LD1;5;5;M12;F2,0;300;;;
+;2;LCM-5MP-06MM-F2.0-1.8-ND1;5;6;C;F2,0;100;;;
+;2;ML-M0822UR;20;8;C;F2,2;100;"2/3""";2.2 ?m;100mm
+;2;LCM-5MP-12MM-F2.0-1.8-ND1;5;12;C;F2,0;100;;;
+;3;LCM-5MP-12MM-F1.4-015;5;12;C;F1,4;100;;;
+;1;LM12-5MP-16MM-F2.0-2-ND1;5;16;M12;F2,0;300;;;
+;1;LCM-5MP-16MM-F2.0-1.8-ND1;5;16;C;F2,0;100;;;
+;4;LCM-5MP-16MM-F1.4-015;5;16;C;F1,4;100;;;
+;1;LCM-20MP-16MM-F2.8-110;20;16;C;F2,8;100;;;
+;1;LCM-20MP-25MM-F2.8-1.1-ND1;20;25;C;F2,8;100;;;
+Tot ;19;;;;;;;;;
